@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Sockets and Monte Carlo</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+      form input { border: 0; padding: 10px; width: 20%; margin-right: .5%; }
+      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages li { padding: 5px 10px; }
+      #messages li:nth-child(odd) { background: #eee; }
+    </style>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+
+    <form action="">
+      <!-- <input id="m" autocomplete="off" /> -->
+      <input id="dist" value='Normal' />
+      <input id="mean" autocomplete="off" placeholder='mean' />
+      <input id="var" autocomplete="off" placeholder='variance' />
+      <button>Send</button>
+    </form>
+ 
+
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      var socket = io();
+      socket.on('new samples', function(data){
+        $('#messages').append($('<li>').text('Socket: ' + data));
+      });
+      // var myWorker = new Worker("worker.js");
+      // myWorker.onmessage = function(e) {
+      //   console.log('Message received from worker ', e.data);
+      // };
+      var myWorker = new Worker("./workers/normalWorker.js");
+      myWorker.onmessage = function(e) {
+          $('#messages').append($('<li>').text('Web Worker: ' + e.data));
+          console.log('Message received from worker');
+        }
+
+      $('form').submit(function(){
+        var mean = $('#mean').val();
+        var variance = $('#var').val();
+        // communicate with the backend to do computation
+        socket.emit('new computation', {mean: mean, variance: variance} );
+        // spin up web worker to handle intial values
+        //
+        myWorker.postMessage( {mean: mean, variance: variance} );
+        
+        //myWorker.postMessage([mean, variance]); // Sending message as an array to the worker
+        console.log('Message posted to worker');
+
+
+
+        $('#mean').val('');
+        $('#var').val('');
+        return false;
+      });
+
+      
+
+      
+    </script>
+  </body>
+</html>

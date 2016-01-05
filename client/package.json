@@ -1,0 +1,6 @@
+{
+  "name": "socket-monte-carlo",
+  "version": "0.0.1",
+  "description": "Stream results of monte-carlo simulation on socket to client",
+  "dependencies": {}
+}
